@@ -33,8 +33,6 @@ public class SimpleHttpServer {
 
                 HttpRequestHandler httpRequestHandler = new HttpRequestHandler(client);
                 httpRequestHandler.run();
-
-                break;
             }
         }
     }

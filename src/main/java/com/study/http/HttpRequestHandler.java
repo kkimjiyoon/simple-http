@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Objects;
 
 @Slf4j
 /* TODO#3 Java에서 Thread는 implements Runnable or extends Thread를 이용해서 Thread를 만들 수 있습니다.
@@ -33,7 +34,7 @@ public class HttpRequestHandler implements Runnable {
 
                 log.debug("{}", line);
 
-                if (line == null || line.length() == 0) {
+                if (Objects.isNull(line) || line.length() == 0) {
                     break;
                 }
             }
@@ -49,11 +50,11 @@ public class HttpRequestHandler implements Runnable {
 
 
             StringBuilder responseHeader = new StringBuilder();
-            responseHeader.append(String.format("HTTP/1.0 200 OK%s", System.lineSeparator()));
+            responseHeader.append(String.format("HTTP/1.0 200 OK%s",System.lineSeparator()));
             responseHeader.append(String.format("Server: HTTP server/0.1%s",System.lineSeparator()));
-            responseHeader.append(String.format("Content-type: text/html; charset=UTF-8%s", System.lineSeparator()));
+            responseHeader.append(String.format("Content-type: text/html; charset=%s%s","UTF-8",System.lineSeparator()));
             responseHeader.append(String.format("Connection: Closed%s",System.lineSeparator()));
-            responseHeader.append(String.format("Content-Length: " + responseBody.length() + "%s", System.lineSeparator()));
+            responseHeader.append(String.format("Content-Length:%d %s%s",responseBody.length(),System.lineSeparator(),System.lineSeparator()));
 
             bufferedWriter.write(String.valueOf(responseHeader));
             bufferedWriter.write(String.valueOf(responseBody));
