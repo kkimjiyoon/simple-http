@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Objects;
 
 @Slf4j
 public class SimpleHttpServer {
@@ -57,18 +58,11 @@ public class SimpleHttpServer {
 
                     //TODO#7 clinet에 응답할 html을 작성합니다.
                     StringBuilder responseBody = new StringBuilder();
-                    responseBody.append("<html>\n" +
-                            "<body>\n" +
-                            "<h1>hello java</h1>\n" +
-                            "</body>\n" +
-                            "</html>");
-                        /*
-                            <html>
-                                <body>
-                                    <h1>hello hava</h1>
-                                </body>
-                            </html>
-                        */
+                    responseBody.append("<html>");
+                    responseBody.append("<body>");
+                    responseBody.append("<h1>hello java</h1>");
+                    responseBody.append("</body>");
+                    responseBody.append("</html>");
 
 
                     StringBuilder responseHeader = new StringBuilder();
@@ -103,11 +97,11 @@ public class SimpleHttpServer {
                     log.error("sock error : {}",e);
                 }finally {
                     //TODO#14 Client Socket Close
-                    client.close();
-
+                    if (Objects.nonNull(client)) {
+                        client.close();
+                    }
                 }
             }//end while
-
         }
     }
 }
