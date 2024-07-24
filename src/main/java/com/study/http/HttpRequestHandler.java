@@ -2,6 +2,7 @@ package com.study.http;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.*;
 import java.net.Socket;
 
 @Slf4j
@@ -19,13 +20,52 @@ public class HttpRequestHandler implements Runnable {
     public void run() {
 
         //TODO#4 simple-http-server-step1을 참고 하여 구현 합니다.
-        /*
-            <html>
-                <body>
-                    <h1>hello java</h1>
-                </body>
-            </html>
-        */
+        StringBuilder requestBuilder = new StringBuilder();
+
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
+             BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()))
+        ){
+            log.debug("------HTTP-REQUEST_start()");
+            while (true) {
+                String line = bufferedReader.readLine();
+                //TODO#5  requestBuilder에 append 합니다.
+                requestBuilder.append(line);
+
+                log.debug("{}", line);
+
+                if (line == null || line.length() == 0) {
+                    break;
+                }
+            }
+
+            log.debug("------HTTP-REQUEST_end()");
+
+            StringBuilder responseBody = new StringBuilder();
+            responseBody.append("<html>");
+            responseBody.append("<body>");
+            responseBody.append("<h1>hello java</h1>");
+            responseBody.append("</body>");
+            responseBody.append("</html>");
+
+
+            StringBuilder responseHeader = new StringBuilder();
+            responseHeader.append(String.format("HTTP/1.0 200 OK%s", System.lineSeparator()));
+            responseHeader.append(String.format("Server: HTTP server/0.1%s",System.lineSeparator()));
+            responseHeader.append(String.format("Content-type: text/html; charset=UTF-8%s", System.lineSeparator()));
+            responseHeader.append(String.format("Connection: Closed%s",System.lineSeparator()));
+            responseHeader.append(String.format("Content-Length: " + responseBody.length() + "%s", System.lineSeparator()));
+
+            bufferedWriter.write(String.valueOf(responseHeader));
+            bufferedWriter.write(String.valueOf(responseBody));
+
+            bufferedWriter.flush();
+
+
+            log.debug("header:{}",responseHeader);
+            log.debug("body:{}",responseBody);
+        } catch (IOException e) {
+            log.error("sock error : {}",e);
+        }
 
     }
 }
