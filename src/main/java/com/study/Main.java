@@ -1,4 +1,6 @@
-package com.study.http;
+package com.study;
+
+import com.study.http.SimpleHttpServer;
 
 import java.io.IOException;
 
