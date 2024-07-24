@@ -49,10 +49,9 @@ public class SimpleHttpServer {
                         log.debug("{}", line);
 
                         //TODO#6 break(종료) 조건을 구현 line is null or line length == 0
-                        if (line == null || line.length() == 0) {
+                        if (Objects.isNull(line) || line.length() == 0) {
                             break;
                         }
-//                            break;
                     }
                     log.debug("------HTTP-REQUEST_end()");
 
@@ -68,23 +67,23 @@ public class SimpleHttpServer {
                     StringBuilder responseHeader = new StringBuilder();
 
                     //TODO#8 HTTP/1.0 200 OK
-                    responseHeader.append(String.format("HTTP/1.0 200 OK%s", System.lineSeparator()));
+                    responseHeader.append(String.format("HTTP/1.0 200 OK%s",System.lineSeparator()));
 
                     responseHeader.append(String.format("Server: HTTP server/0.1%s",System.lineSeparator()));
 
                     //TODO#9 Content-type: text/html; charset=UTF-8"
-                    responseHeader.append(String.format("Content-type: text/html; charset=UTF-8%s", System.lineSeparator()));
+                    responseHeader.append(String.format("Content-type: text/html; charset=%s%s","UTF-8",System.lineSeparator()));
 
                     responseHeader.append(String.format("Connection: Closed%s",System.lineSeparator()));
 
                     //TODO#10 responseBody의  Content-Length를 설정 합니다.
-                    responseHeader.append(String.format("Content-Length: " + responseBody.length() + "%s", System.lineSeparator()));
+                    responseHeader.append(String.format("Content-Length:%d %s%s",responseBody.length(),System.lineSeparator(),System.lineSeparator()));
 
                     //TODO#11 write Response Header
-                    bufferedWriter.write(String.valueOf(responseHeader));
+                    bufferedWriter.write(responseHeader.toString());
 
                     //TODO#12 write Response Body
-                    bufferedWriter.write(String.valueOf(responseBody));
+                    bufferedWriter.write(responseBody.toString());
 
                     //TODO#13 buffer에 등록된 Response (header, body) flush 합니다.(socket을 통해서 clent에 응답 합니다.)
                     bufferedWriter.flush();
