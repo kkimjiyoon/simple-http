@@ -2,10 +2,9 @@ package com.study.http;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
 
 @Slf4j
 public class SimpleHttpServer {
@@ -16,25 +15,48 @@ public class SimpleHttpServer {
     public SimpleHttpServer(){
         this(DEFAULT_PORT);
     }
-
     public SimpleHttpServer(int port) {
         if(port<=0){
-            throw new IllegalArgumentException(String.format("invalid port :%d",port));
+            throw new IllegalArgumentException(String.format("Invalid Port:%d",port));
         }
         this.port = port;
     }
 
-    public void start() throws IOException {
-        //TODO#1 - SocketServer를 생성 합니다. PORT = 8080
-        try(ServerSocket serverSocket = new ServerSocket(8080)){
-            while(true){
-                //TODO#2 - Client와 서버가 연결 되면 HttpRequestHandler를 이용해서 Thread을 생성 합니다.
-                Socket client = serverSocket.accept();
+    public void start(){
+        try(ServerSocket serverSocket = new ServerSocket(8080);){
 
-                HttpRequestHandler httpRequestHandler = new HttpRequestHandler(client);
-                httpRequestHandler.run();
+            HttpRequestHandler httpRequestHandlerA = new HttpRequestHandler();
+            HttpRequestHandler httpRequestHandlerB = new HttpRequestHandler();
+
+            //TODO#9threadA를 생성하고 시작 합니다.
+            Thread threadA = new Thread(httpRequestHandlerA);
+            threadA.start();
+
+
+            //TODO#10threadB를 생성하고 시작 합니다.
+            Thread threadB = new Thread(httpRequestHandlerB);
+            threadB.start();
+
+            long count = 0;
+
+            while(true){
+                Socket client = serverSocket.accept();
+                /*TODO#O11 count값이 짝수이면 httpRequestHandlerA에 client를 추가 합니다.
+                           count값이 홀수라면 httpRequestHandlerB에 clinet를 추가 합니다.
+                */
+
+                if (count % 2 == 0) {
+                    httpRequestHandlerA.addRequest(client);
+                } else {
+                    httpRequestHandlerB.addRequest(client);
+                }
+
+                count++;
             }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-
 }
+
