@@ -1,5 +1,7 @@
 package com.study.http;
 
+import com.study.http.channel.HttpJob;
+import com.study.http.channel.RequestChannel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -12,50 +14,38 @@ public class SimpleHttpServer {
     private final int port;
     private static final int DEFAULT_PORT=8080;
 
+    private final RequestChannel requestChannel;
+
     public SimpleHttpServer(){
         this(DEFAULT_PORT);
     }
+    private WorkerThreadPool workerThreadPool;
+
     public SimpleHttpServer(int port) {
         if(port<=0){
             throw new IllegalArgumentException(String.format("Invalid Port:%d",port));
         }
         this.port = port;
+        //TODO#5 RequestChannel() 초기화 합니다.
+        requestChannel = new RequestChannel();
+
+        //TODO#6 workerThreadPool 초기화 합니다.
+        workerThreadPool = new WorkerThreadPool(requestChannel);
     }
 
     public void start(){
+        //TODO#7 workerThreadPool을 시작 합니다.
+        workerThreadPool.start();
+
         try(ServerSocket serverSocket = new ServerSocket(8080);){
-
-            HttpRequestHandler httpRequestHandlerA = new HttpRequestHandler();
-            HttpRequestHandler httpRequestHandlerB = new HttpRequestHandler();
-
-            //TODO#9threadA를 생성하고 시작 합니다.
-            Thread threadA = new Thread(httpRequestHandlerA);
-            threadA.start();
-
-
-            //TODO#10threadB를 생성하고 시작 합니다.
-            Thread threadB = new Thread(httpRequestHandlerB);
-            threadB.start();
-
-            long count = 0;
-
             while(true){
                 Socket client = serverSocket.accept();
-                /*TODO#O11 count값이 짝수이면 httpRequestHandlerA에 client를 추가 합니다.
-                           count값이 홀수라면 httpRequestHandlerB에 clinet를 추가 합니다.
-                */
-
-                if (count % 2 == 0) {
-                    httpRequestHandlerA.addRequest(client);
-                } else {
-                    httpRequestHandlerB.addRequest(client);
-                }
-
-                count++;
+                //TODO#8 Queue(requestChannel)에 HttpJob 객체를 배치 합니다.
+                HttpJob httpJob = new HttpJob(client);
+                requestChannel.addHttpJob(httpJob);
             }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        }catch (IOException e){
+            log.error("server error:{}",e);
         }
     }
 }
