@@ -1,5 +1,10 @@
 package com.study.http.channel;
 
+import com.study.http.request.HttpRequest;
+import com.study.http.request.HttpRequestImpl;
+import com.study.http.response.HttpResponse;
+import com.study.http.response.HttpResponseImpl;
+import com.study.http.util.ResponseUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -8,60 +13,64 @@ import java.util.Objects;
 
 @Slf4j
 public class HttpJob implements Executable {
+
+    private final HttpRequest httpRequest;
+    private final HttpResponse httpResponse;
+
     private final Socket client;
 
     public HttpJob(Socket client) {
+        this.httpRequest = new HttpRequestImpl(client);
+        this.httpResponse = new HttpResponseImpl(client);
         this.client = client;
     }
 
-    public Socket getClient() {
-        return client;
+    public HttpRequest getHttpRequest() {
+        return httpRequest;
     }
 
     @Override
-    public void execute(){
-        //TODO#10 HttpJob는 execute() method를 구현 합니다.
-        StringBuilder requestBuilder = new StringBuilder();
-        try(BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
-        ) {
+    public void execute() throws IOException {
 
-            while (true) {
-                String line = bufferedReader.readLine();
-                requestBuilder.append(line);
-                log.debug("line:{}", line);
-                if (Objects.isNull(line) || line.length() == 0) {
-                    break;
-                }
-            }
+        log.debug("method:{}", httpRequest.getMethod());
+        log.debug("uri:{}", httpRequest.getRequestURI());
+        log.debug("client-closed:{}",client.isClosed());
 
-            StringBuilder responseBody = new StringBuilder();
-            responseBody.append("<html>");
-            responseBody.append("<body>");
-            responseBody.append("<h1>hello java</h1>");
-            responseBody.append("</body>");
-            responseBody.append("</html>");
+        /*TODO#5 Browser(client)는 특정 page를 요청시 먼저 /favicon.ico 호출 합니다.
+          아래 코드에서는 /favicon.ico 요청을 처리하지 않고 return 합니다.
+        */
+        if(httpRequest.getRequestURI().equals("/favicon.ico")){
+            return;
+        }
 
-            StringBuilder responseHeader = new StringBuilder();
+        /*TODO#6 /index.html을 요청시  httpRequest.getRequestURI()에 해당되는 html 파일이 존재 하지 않는다면 client 연결을 종료 합니다.
+            ex) /index.html 요청이 온다면 ->  /resources/index.html이 존재하지 않는다면 client 연결을 종료 합니다.
+            ResponseUtils.isExist(httpRequest.getRequestURI()) 이용하여 구현합니다.
+        */
 
-            responseHeader.append(String.format("HTTP/1.0 200 OK%s",System.lineSeparator()));
-            responseHeader.append(String.format("Server: HTTP server/0.1%s",System.lineSeparator()));
-            responseHeader.append(String.format("Content-type: text/html; charset=%s%s","UTF-8",System.lineSeparator()));
-            responseHeader.append(String.format("Connection: Closed%s",System.lineSeparator()));
-            responseHeader.append(String.format("Content-Length:%d %s%s",responseBody.length(),System.lineSeparator(),System.lineSeparator()));
-
-            bufferedWriter.write(responseHeader.toString());
-            bufferedWriter.write(responseBody.toString());
-            bufferedWriter.flush();
+        if (!ResponseUtils.isExist(httpRequest.getRequestURI())) {
             client.close();
-        }catch (IOException e){
-            log.error("server error:{}",e);
-        }finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        }
+
+
+        /*TODO#8 responseBody에 응답할 html 파일을 읽습니다.
+           ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI()) 이용하여 구현 합니다.
+        */
+        String responseBody = ResponseUtils.tryGetBodyFromFile(httpRequest.getRequestURI());
+
+
+        /*TODO#10 ResponseHeader를 생성합니다.
+          ResponseUtils.createResponseHeader() 이용해서 생성합니다. responseHeader를 생성합니다.
+        */
+        String responseHeader = ResponseUtils.createResponseHeader(200, "UTF-8", responseBody.getBytes().length);
+
+        //TODO#12 PrintWriter을 사용 하여 responseHeader, responseBody를 응답합니다.
+        try (PrintWriter writer = httpResponse.getWriter()) {
+            writer.write(responseHeader);
+            writer.write(responseBody);
+
+            writer.flush();
         }
     }
 }
+
