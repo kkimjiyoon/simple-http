@@ -4,6 +4,8 @@ import com.study.http.request.HttpRequest;
 import com.study.http.request.HttpRequestImpl;
 import com.study.http.response.HttpResponse;
 import com.study.http.response.HttpResponseImpl;
+import com.study.http.service.IndexHttpService;
+import com.study.http.service.InfoHttpService;
 import com.study.http.util.ResponseUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,6 +57,16 @@ public class HttpJob implements Executable {
            service()에서 Request Method에 의해서 doGet or doPost를 호출 합니다
         */
 
+        InfoHttpService infoHttpService = new InfoHttpService();
+        IndexHttpService indexHttpService = new IndexHttpService();
+
+        log.info("request URI:{}", httpRequest.getRequestURI());
+
+        if (httpRequest.getRequestURI().equals("/info.html")) {
+            infoHttpService.service(httpRequest, httpResponse);
+        } else if (httpRequest.getRequestURI().equals("/index.html")) {
+            indexHttpService.service(httpRequest, httpResponse);
+        }
 
         try {
             if(Objects.nonNull(client) && client.isConnected()) {
