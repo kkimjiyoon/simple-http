@@ -22,7 +22,6 @@ public class HttpRequestHandler implements Runnable {
     @Override
     public void run() {
         Executable httpJob = requestChannel.getHttpJob();
-        //TODO#11 httpJob 객체의 execute() method를 실행 합니다.
         try {
             httpJob.execute();
         } catch (IOException e) {
