@@ -2,6 +2,7 @@ package com.study.http.channel;
 
 import com.study.http.context.Context;
 import com.study.http.context.ContextHolder;
+import com.study.http.context.exception.ObjectNotFoundException;
 import com.study.http.request.HttpRequest;
 import com.study.http.request.HttpRequestImpl;
 import com.study.http.response.HttpResponse;
@@ -58,9 +59,15 @@ public class HttpJob implements Executable {
         //TODO#6 requestURI()을 이용해서 Context에 등록된 HttpService를 실행 합니다.
         Context context = ContextHolder.getApplicationContext();
 
-        HttpService httpService = (HttpService) context.getAttribute(httpRequest.getRequestURI());
+        HttpService httpService = null;
 
-        httpService.service(httpRequest, httpResponse);
+        try {
+            httpService = (HttpService) context.getAttribute(httpRequest.getRequestURI());
+            httpService.service(httpRequest, httpResponse);
+        }catch (ObjectNotFoundException e){
+            log.error("Service Not Found : {}",e.getMessage());
+            return;
+        }
 
         try {
             if(Objects.nonNull(client) && client.isConnected()) {

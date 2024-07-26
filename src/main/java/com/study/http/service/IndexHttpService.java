@@ -22,10 +22,8 @@ public class IndexHttpService implements HttpService{
             responseBody = ResponseUtils.tryGetBodyFormFile(httpRequest.getRequestURI());
             //TODO#8 CounterUtils.increaseAndGet()를 이용해서 context에 있는 counter 값을 증가시키고, 반환되는 값을 index.html에 반영 합니다.
             //${count} <-- counter 값을 치환 합니다.
-            long count = CounterUtils.increaseAndGet();
-
-            responseBody = responseBody.replace("${count}", Long.toString(count));
-
+            responseBody = responseBody.replace("${count}", String.valueOf(CounterUtils.increaseAndGet()));
+            responseBody = responseBody.replace("${userId}", httpRequest.getParameter("userId"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -45,4 +43,5 @@ public class IndexHttpService implements HttpService{
 
     }
 }
+
 
