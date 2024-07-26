@@ -2,6 +2,7 @@ package com.study.http.service;
 
 import com.study.http.request.HttpRequest;
 import com.study.http.response.HttpResponse;
+import com.study.http.util.CounterUtils;
 import com.study.http.util.ResponseUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -10,10 +11,6 @@ import java.io.PrintWriter;
 
 @Slf4j
 public class IndexHttpService implements HttpService{
-    /* TODO#2 IndexHttpService 구현
-       http://localhost:8080/index.html
-       요청을 처리하는 HttpService 입니다.
-    */
 
     @Override
     public void doGet(HttpRequest httpRequest, HttpResponse httpResponse) {
@@ -23,6 +20,12 @@ public class IndexHttpService implements HttpService{
 
         try {
             responseBody = ResponseUtils.tryGetBodyFormFile(httpRequest.getRequestURI());
+            //TODO#8 CounterUtils.increaseAndGet()를 이용해서 context에 있는 counter 값을 증가시키고, 반환되는 값을 index.html에 반영 합니다.
+            //${count} <-- counter 값을 치환 합니다.
+            long count = CounterUtils.increaseAndGet();
+
+            responseBody = responseBody.replace("${count}", Long.toString(count));
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -42,3 +45,4 @@ public class IndexHttpService implements HttpService{
 
     }
 }
+

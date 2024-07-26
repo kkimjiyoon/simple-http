@@ -1,9 +1,12 @@
 package com.study.http.channel;
 
+import com.study.http.context.Context;
+import com.study.http.context.ContextHolder;
 import com.study.http.request.HttpRequest;
 import com.study.http.request.HttpRequestImpl;
 import com.study.http.response.HttpResponse;
 import com.study.http.response.HttpResponseImpl;
+import com.study.http.service.HttpService;
 import com.study.http.service.IndexHttpService;
 import com.study.http.service.InfoHttpService;
 import com.study.http.util.ResponseUtils;
@@ -52,21 +55,12 @@ public class HttpJob implements Executable {
             return;
         }
 
-        /*TODO#4 RequestURI에 따른 HttpService를 생성하고 service() 호출 합니다.
-           httpService.service(httpRequest, httpResponse) 호출하면
-           service()에서 Request Method에 의해서 doGet or doPost를 호출 합니다
-        */
+        //TODO#6 requestURI()을 이용해서 Context에 등록된 HttpService를 실행 합니다.
+        Context context = ContextHolder.getApplicationContext();
 
-        InfoHttpService infoHttpService = new InfoHttpService();
-        IndexHttpService indexHttpService = new IndexHttpService();
+        HttpService httpService = (HttpService) context.getAttribute(httpRequest.getRequestURI());
 
-        log.info("request URI:{}", httpRequest.getRequestURI());
-
-        if (httpRequest.getRequestURI().equals("/info.html")) {
-            infoHttpService.service(httpRequest, httpResponse);
-        } else if (httpRequest.getRequestURI().equals("/index.html")) {
-            indexHttpService.service(httpRequest, httpResponse);
-        }
+        httpService.service(httpRequest, httpResponse);
 
         try {
             if(Objects.nonNull(client) && client.isConnected()) {
@@ -75,7 +69,6 @@ public class HttpJob implements Executable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 }
 
